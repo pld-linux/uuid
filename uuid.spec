@@ -1,8 +1,7 @@
 # TODO
-# - conflicts with e2fsprogs uuid, rename libs with ossp prefix?
 # - rename include ossp/uuid.h?
 # - rename package to ossp-uuid?
-# - fix bindings compilation
+# - fix bindings compilation (when library is not installed)
 #
 # Conditional build:
 %bcond_without	php		# build PHP binding
@@ -12,12 +11,13 @@
 Summary:	Universally Unique Identifier library
 Name:		uuid
 Version:	1.6.1
-Release:	0.2
+Release:	0.5
 License:	MIT
 Group:		Libraries
 URL:		http://www.ossp.org/pkg/lib/uuid/
 Source0:	ftp://ftp.ossp.org/pkg/lib/uuid/%{name}-%{version}.tar.gz
 # Source0-md5:	18c8875411da07fe4503fdfc2136bf46
+Patch0:		%{name}-ossp-prefix.patch
 BuildRequires:	libtool
 %{?with_php:BuildRequires:	php-devel >= 3:5.0.0}
 %{?with_pgsql:BuildRequires:	postgresql-devel}
@@ -106,6 +106,7 @@ PostgreSQL OSSP uuid module.
 
 %prep
 %setup -q
+%patch0 -p1
 
 %build
 # Build the library.
@@ -145,42 +146,42 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(644,root,root,755)
 %doc AUTHORS ChangeLog HISTORY NEWS PORTING README SEEALSO THANKS TODO USERS
 %attr(755,root,root) %{_bindir}/uuid
-%attr(755,root,root) %{_libdir}/libuuid.so.*.*.*
-%attr(755,root,root) %ghost %{_libdir}/libuuid.so.16
+%attr(755,root,root) %{_libdir}/libossp-uuid.so.*.*.*
+%attr(755,root,root) %ghost %{_libdir}/libossp-uuid.so.16
 %{_mandir}/man1/uuid.1*
 
 %files devel
 %defattr(644,root,root,755)
 %attr(755,root,root) %{_bindir}/uuid-config
 %{_includedir}/uuid.h
-%{_libdir}/libuuid.so
-%{_pkgconfigdir}/uuid.pc
-%{_mandir}/man3/uuid.3*
+%{_libdir}/libossp-uuid.so
+%{_pkgconfigdir}/ossp-uuid.pc
+%{_mandir}/man3/ossp-uuid.3*
 %{_mandir}/man1/uuid-config.1*
-%{_libdir}/libuuid.la
+%{_libdir}/libossp-uuid.la
 
 %files c++
 %defattr(644,root,root,755)
-%attr(755,root,root) %{_libdir}/libuuid++.so.*.*.*
-%attr(755,root,root) %ghost %{_libdir}/libuuid++.so.16
+%attr(755,root,root) %{_libdir}/libossp-uuid++.so.*.*.*
+%attr(755,root,root) %ghost %{_libdir}/libossp-uuid++.so.16
 
 %files c++-devel
 %defattr(644,root,root,755)
 %{_includedir}/uuid++.hh
-%{_libdir}/libuuid++.so
-%{_libdir}/libuuid++.la
+%{_libdir}/libossp-uuid++.so
+%{_libdir}/libossp-uuid++.la
 %{_mandir}/man3/uuid++.3*
 
 %files dce
 %defattr(644,root,root,755)
-%attr(755,root,root) %{_libdir}/libuuid_dce.so.*.*.*
-%attr(755,root,root) %ghost %{_libdir}/libuuid_dce.so.16
+%attr(755,root,root) %{_libdir}/libossp-uuid_dce.so.*.*.*
+%attr(755,root,root) %ghost %{_libdir}/libossp-uuid_dce.so.16
 
 %files dce-devel
 %defattr(644,root,root,755)
 %{_includedir}/uuid_dce.h
-%{_libdir}/libuuid_dce.so
-%{_libdir}/libuuid_dce.la
+%{_libdir}/libossp-uuid_dce.so
+%{_libdir}/libossp-uuid_dce.la
 
 %if %{with perl}
 %files -n perl-%{name}
@@ -195,13 +196,13 @@ rm -rf $RPM_BUILD_ROOT
 %if %{with php}
 %files -n php-%{name}
 %defattr(644,root,root,755)
-%{_libdir}/php/uuid.so
+%{_libdir}/php/ossp-uuid.so
 %{_datadir}/php/uuid.php
 %endif
 
 %if %{with pgsql}
 %files -n postgresql-%{name}
 %defattr(644,root,root,755)
-%{_libdir}/postgresql/uuid.so
+%{_libdir}/postgresql/ossp-uuid.so
 %{_datadir}/postgresql/uuid.sql
 %endif
