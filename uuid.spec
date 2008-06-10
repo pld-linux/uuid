@@ -5,22 +5,23 @@
 # - fix bindings compilation
 #
 # Conditional build:
-%bcond_with	php		# build with PHP binding
-%bcond_with	perl		# build with Perl binding
-%bcond_without	pgsql		# build with postgresql binding
+%bcond_without	php		# build PHP binding
+%bcond_with	perl		# build Perl binding
+%bcond_without	pgsql		# build postgresql binding
 #
 Summary:	Universally Unique Identifier library
 Name:		uuid
-Version:	1.5.1
+Version:	1.6.1
 Release:	0.2
 License:	MIT
 Group:		Libraries
 URL:		http://www.ossp.org/pkg/lib/uuid/
 Source0:	ftp://ftp.ossp.org/pkg/lib/uuid/%{name}-%{version}.tar.gz
-# Source0-md5:	d7df0c4cb02dad7ce3e1ec8fc669f724
+# Source0-md5:	18c8875411da07fe4503fdfc2136bf46
 BuildRequires:	libtool
-%{?with_php:BuildRequires:	php-devel}
+%{?with_php:BuildRequires:	php-devel >= 3:5.0.0}
 %{?with_pgsql:BuildRequires:	postgresql-devel}
+BuildRequires:	rpmbuild(macros) >= 1.344
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %description
@@ -77,7 +78,7 @@ Requires:	%{name}-devel = %{version}-%{release}
 DCE development headers and libraries for OSSP uuid.
 
 %package -n perl-%{name}
-Summary:	Perl support for Universally Unique Identifier library
+Summary:	OSSP uuid Perl Binding
 Group:		Development/Libraries
 Requires:	%{name} = %{version}-%{release}
 
@@ -88,12 +89,15 @@ Perl OSSP uuid modules, which includes a Data::UUID replacement.
 Summary:	PHP support for Universally Unique Identifier library
 Group:		Development/Libraries
 Requires:	%{name} = %{version}-%{release}
+%{?requires_php_extension}
+Requires:	php-common >= 4:5.0.4
 
 %description -n php-%{name}
-PHP OSSP uuid module.
+UUID is a PHP extension for the creation of Universally Unique
+Identifiers (UUID).
 
 %package -n postgresql-%{name}
-Summary:	PostgreSQL support for Universally Unique Identifier library
+Summary:	OSSP uuid bindings for PostgreSQL
 Group:		Development/Libraries
 Requires:	%{name} = %{version}-%{release}
 
@@ -120,6 +124,11 @@ rm -rf $RPM_BUILD_ROOT
 %{__make} install \
 	DESTDIR=$RPM_BUILD_ROOT
 
+%if %{with php}
+install -d $RPM_BUILD_ROOT%{_datadir}/php
+mv $RPM_BUILD_ROOT{%{php_extensiondir},%{_datadir}/php}/%{name}.php
+%endif
+
 %clean
 rm -rf $RPM_BUILD_ROOT
 
@@ -137,7 +146,7 @@ rm -rf $RPM_BUILD_ROOT
 %doc AUTHORS ChangeLog HISTORY NEWS PORTING README SEEALSO THANKS TODO USERS
 %attr(755,root,root) %{_bindir}/uuid
 %attr(755,root,root) %{_libdir}/libuuid.so.*.*.*
-%attr(755,root,root) %ghost %{_libdir}/libuuid.so.15
+%attr(755,root,root) %ghost %{_libdir}/libuuid.so.16
 %{_mandir}/man1/uuid.1*
 
 %files devel
@@ -153,7 +162,7 @@ rm -rf $RPM_BUILD_ROOT
 %files c++
 %defattr(644,root,root,755)
 %attr(755,root,root) %{_libdir}/libuuid++.so.*.*.*
-%attr(755,root,root) %ghost %{_libdir}/libuuid++.so.15
+%attr(755,root,root) %ghost %{_libdir}/libuuid++.so.16
 
 %files c++-devel
 %defattr(644,root,root,755)
@@ -165,7 +174,7 @@ rm -rf $RPM_BUILD_ROOT
 %files dce
 %defattr(644,root,root,755)
 %attr(755,root,root) %{_libdir}/libuuid_dce.so.*.*.*
-%attr(755,root,root) %ghost %{_libdir}/libuuid_dce.so.15
+%attr(755,root,root) %ghost %{_libdir}/libuuid_dce.so.16
 
 %files dce-devel
 %defattr(644,root,root,755)
@@ -187,6 +196,7 @@ rm -rf $RPM_BUILD_ROOT
 %files -n php-%{name}
 %defattr(644,root,root,755)
 %{_libdir}/php/uuid.so
+%{_datadir}/php/uuid.php
 %endif
 
 %if %{with pgsql}
