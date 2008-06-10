@@ -1,5 +1,14 @@
 # TODO
 # - conflicts with e2fsprogs uuid, rename libs with ossp prefix?
+# - rename include ossp/uuid.h?
+# - rename package to ossp-uuid?
+# - fix bindings compilation
+#
+# Conditional build:
+%bcond_with	php		# build with PHP binding
+%bcond_with	perl		# build with Perl binding
+%bcond_without	pgsql		# build with postgresql binding
+#
 Summary:	Universally Unique Identifier library
 Name:		uuid
 Version:	1.5.1
@@ -10,8 +19,8 @@ URL:		http://www.ossp.org/pkg/lib/uuid/
 Source0:	ftp://ftp.ossp.org/pkg/lib/uuid/%{name}-%{version}.tar.gz
 # Source0-md5:	d7df0c4cb02dad7ce3e1ec8fc669f724
 BuildRequires:	libtool
-BuildRequires:	php-devel
-BuildRequires:	postgresql-devel
+%{?with_php:BuildRequires:	php-devel}
+%{?with_pgsql:BuildRequires:	postgresql-devel}
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %description
@@ -98,60 +107,18 @@ PostgreSQL OSSP uuid module.
 # Build the library.
 %configure \
 	--disable-static \
-	--without-perl \
-	--without-php \
 	--with-dce \
 	--with-cxx \
-	--with-pgsql
+	--with%{!?with_perl:out}-perl \
+	--with%{!?with_php:out}-php \
+	--with%{!?with_pgsql:out}-pgsql
 
 %{__make}
-
-# Build the Perl module.
-cd perl
-%{__perl} Makefile.PL \
-	INSTALLDIRS=vendor \
-	OPTIMIZE="%{rpmcflags}" \
-	COMPAT=1
-%{__make}
-cd -
-
-# Build the PHP module.
-cd php
-phpize
-%configure \
-	--enable-uuid
-%{__make}
-cd -
 
 %install
 rm -rf $RPM_BUILD_ROOT
 %{__make} install \
 	DESTDIR=$RPM_BUILD_ROOT
-
-rm -f $RPM_BUILD_ROOT%{_libdir}/*.{la,a}
-#chmod 755 $RPM_BUILD_ROOT%{_libdir}/*.so.*.*.*
-
-# Install the Perl modules.
-%{__make} -C perl pure_install \
-	PERL_INSTALL_ROOT=$RPM_BUILD_ROOT
-
-# Install the PHP module.
-%{__make} -C php install \
-	INSTALL_ROOT=$RPM_BUILD_ROOT
-rm -f $RPM_BUILD_ROOT%{_libdir}/php/modules/*.a
-
-%if 0
-%check
-%{__make} check
-
-cd perl
-LD_LIBRARY_PATH=../.libs make test
-cd -
-
-cd php
-LD_LIBRARY_PATH=../.libs make test
-cd -
-%endif
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -169,7 +136,8 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(644,root,root,755)
 %doc AUTHORS ChangeLog HISTORY NEWS PORTING README SEEALSO THANKS TODO USERS
 %attr(755,root,root) %{_bindir}/uuid
-%attr(755,root,root) %{_libdir}/libuuid.so.*
+%attr(755,root,root) %{_libdir}/libuuid.so.*.*.*
+%attr(755,root,root) %ghost %{_libdir}/libuuid.so.15
 %{_mandir}/man1/*
 
 %files devel
@@ -179,26 +147,32 @@ rm -rf $RPM_BUILD_ROOT
 %{_libdir}/libuuid.so
 %{_pkgconfigdir}/uuid.pc
 %{_mandir}/man3/uuid.3*
+%{_libdir}/libuuid.la
 
 %files c++
 %defattr(644,root,root,755)
-%attr(755,root,root) %{_libdir}/libuuid++.so.*
+%attr(755,root,root) %{_libdir}/libuuid++.so.*.*.*
+%attr(755,root,root) %ghost %{_libdir}/libuuid++.so.15
 
 %files c++-devel
 %defattr(644,root,root,755)
 %{_includedir}/uuid++.hh
 %{_libdir}/libuuid++.so
+%{_libdir}/libuuid++.la
 %{_mandir}/man3/uuid++.3*
 
 %files dce
 %defattr(644,root,root,755)
-%attr(755,root,root) %{_libdir}/libuuid_dce.so.*
+%attr(755,root,root) %{_libdir}/libuuid_dce.so.*.*.*
+%attr(755,root,root) %ghost %{_libdir}/libuuid_dce.so.15
 
 %files dce-devel
 %defattr(644,root,root,755)
 %{_includedir}/uuid_dce.h
 %{_libdir}/libuuid_dce.so
+%{_libdir}/libuuid_dce.la
 
+%if %{with perl}
 %files -n perl-%{name}
 %defattr(644,root,root,755)
 %{perl_vendorarch}/auto/*
@@ -206,12 +180,17 @@ rm -rf $RPM_BUILD_ROOT
 %{perl_vendorarch}/OSSP*
 %{_mandir}/man3/Data::UUID.3*
 %{_mandir}/man3/OSSP::uuid.3*
+%endif
 
+%if %{with php}
 %files -n php-%{name}
 %defattr(644,root,root,755)
 %{_libdir}/php/uuid.so
+%endif
 
+%if %{with pgsql}
 %files -n postgresql-%{name}
 %defattr(644,root,root,755)
 %{_libdir}/postgresql/uuid.so
 %{_datadir}/postgresql/uuid.sql
+%endif
