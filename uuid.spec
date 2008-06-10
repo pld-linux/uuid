@@ -12,7 +12,7 @@
 Summary:	Universally Unique Identifier library
 Name:		uuid
 Version:	1.5.1
-Release:	0.1
+Release:	0.2
 License:	MIT
 Group:		Libraries
 URL:		http://www.ossp.org/pkg/lib/uuid/
@@ -138,7 +138,7 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_bindir}/uuid
 %attr(755,root,root) %{_libdir}/libuuid.so.*.*.*
 %attr(755,root,root) %ghost %{_libdir}/libuuid.so.15
-%{_mandir}/man1/*
+%{_mandir}/man1/uuid.1*
 
 %files devel
 %defattr(644,root,root,755)
@@ -147,6 +147,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_libdir}/libuuid.so
 %{_pkgconfigdir}/uuid.pc
 %{_mandir}/man3/uuid.3*
+%{_mandir}/man1/uuid-config.1*
 %{_libdir}/libuuid.la
 
 %files c++
